@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bienvenue sur AnonPhoto{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5 px-3">
+    <h1 class="display-4 fw-bold">🤫 AnonyFan</h1>
+    <p class="lead">Partage une photo, reçois des commentaires <strong>100% anonymes</strong>.</p>
+</div>
+
+<div class="row text-center mb-5 px-2 gx-3 gy-4">
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="background-color: #fd9b7a;">
+            <div class="card-body">
+                <h5 class="card-title text-white">1️⃣ Upload une photo</h5>
+                <p class="card-text text-white">Choisis une image que tu veux que les gens commentent. Pas besoin de
+                    compte.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="background-color: #fd9b7a;">
+            <div class="card-body">
+                <h5 class="card-title text-white">2️⃣ Partage le lien</h5>
+                <p class="card-text text-white">Tu reçois un lien public à poster sur Insta, Snap, TikTok, etc.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="background-color: #fd9b7a;">
+            <div class="card-body">
+                <h5 class="card-title text-white">3️⃣ Lis les messages</h5>
+                <p class="card-text text-white">Tu as aussi un lien privé pour lire tous les commentaires anonymes 😏
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<div id="form-section" class="card shadow p-4 text-center mt-5" style="background-color: #fd9b7a;">
+    <h2 class="container text-white">Commencer maintenant</h2>
+    <h2 class="mb-4 text-white">📸 Uploade une photo maintenant</h2>
+    <form method="post" enctype="multipart/form-data" class="text-white px-3 px-md-5">
+        {% csrf_token %}
+
+        <div class="mb-3 text-start">
+            {{ form.image.label_tag }}
+            {{ form.image }}
+        </div>
+
+        <div class="mb-3 text-start">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+        </div>
+
+        <div class="mt-3">
+            <img id="preview" src="#" alt="Aperçu de l'image"
+                style="max-width: 100%; max-height: 300px; display:none; object-fit: contain; border-radius: 10px;" />
+        </div>
+
+        <button class="btn btn-success btn-lg mt-3">🚀 Envoyer</button>
+    </form>
+
+    <script>
+        document.getElementById('id_image').onchange = evt => {
+            const [file] = evt.target.files
+            if (file) {
+                const preview = document.getElementById('preview')
+                preview.src = URL.createObjectURL(file)
+                preview.style.display = 'block'
+            }
+        }
+    </script>
+</div>
+{% endblock %}

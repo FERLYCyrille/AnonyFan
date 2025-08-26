@@ -1,0 +1,26 @@
+<!-- core/templates/links.html -->
+{% extends 'base.html' %}
+
+{% block title %}Lien généré{% endblock %}
+
+{% block content %}
+<div class="card shadow p-4 text-center" style="background-color: #fd9b7a; color: white;">
+    <h3 class="mb-3">✅ Photo ajoutée avec succès !</h3>
+    <p>Voici tes liens :</p>
+
+    <div class="alert alert-success">
+        <strong>🔗 Lien public (partage ce lien sur tes reseaux ou à tes amis pour qu'ils puissent commenter
+            anonymement) :</strong><br>
+        <a href="{% url 'photo_page' photo.id %}">{{ request.build_absolute_uri|slice:":-1" }}{% url 'photo_page'
+            photo.id %}</a>
+    </div>
+
+    <div class="alert alert-warning">
+        <strong>🕵️ Lien privé (pour voir les commentaires. Garde le pour toi seul. ) :</strong><br>
+        <a href="{% url 'view_comments' photo.id photo.secret_token %}">{{ request.build_absolute_uri|slice:":-1" }}{%
+            url 'view_comments' photo.id photo.secret_token %}</a>
+    </div>
+
+    <a class="btn btn-outline-dark mt-3" href="{% url 'upload_photo' %}">Uploader une autre</a>
+</div>
+{% endblock %}
