@@ -1,26 +1,56 @@
-<!-- core/templates/links.html -->
 {% extends 'base.html' %}
 
 {% block title %}Lien généré{% endblock %}
 
 {% block content %}
-<div class="card shadow p-4 text-center" style="background-color: #fd9b7a; color: white;">
-    <h3 class="mb-3">✅ Photo ajoutée avec succès !</h3>
-    <p>Voici tes liens :</p>
+<div class="card shadow-lg p-4 mx-auto mt-5 text-center"
+    style="max-width: 700px; background: linear-gradient(135deg, #fd9b7a, #ffb199); color: white; border-radius: 15px;">
 
-    <div class="alert alert-success">
-        <strong>🔗 Lien public (partage ce lien sur tes reseaux ou à tes amis pour qu'ils puissent commenter
-            anonymement) :</strong><br>
-        <a href="{% url 'photo_page' photo.id %}">{{ request.build_absolute_uri|slice:":-1" }}{% url 'photo_page'
-            photo.id %}</a>
+    <h4 class="mb-3">✅ Photo ajoutée avec succès !</h4>
+    <p class="mb-4">Voici tes liens :</p>
+
+    <!-- Lien public -->
+    <div class="alert alert-success d-flex justify-content-between align-items-center">
+        <div class="text-start">
+            <strong>🔗 Lien public (à partager à vos amis pour qu'ils puissent commenter votre photo) :</strong><br>
+            <a id="publicLink" href="{% url 'photo_page' photo.id %}" target="_blank" class="text-break">
+                {{ request.build_absolute_uri|slice:":-1" }}{% url 'photo_page' photo.id %}
+            </a>
+        </div>
+        <button class="btn btn-sm btn-outline-dark ms-2" onclick="copyToClipboard('publicLink')">📋</button>
     </div>
 
-    <div class="alert alert-warning">
-        <strong>🕵️ Lien privé (pour voir les commentaires. Garde le pour toi seul. ) :</strong><br>
-        <a href="{% url 'view_comments' photo.id photo.secret_token %}">{{ request.build_absolute_uri|slice:":-1" }}{%
-            url 'view_comments' photo.id photo.secret_token %}</a>
+    <!-- Lien privé -->
+    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+        <div class="text-start">
+            <strong>🕵️ Lien privé (à garder secret pour voir les commentaire sur votre photo ) :</strong><br>
+            <a id="privateLink" href="{% url 'view_comments' photo.id photo.secret_token %}" target="_blank"
+                class="text-break">
+                {{ request.build_absolute_uri|slice:":-1" }}{% url 'view_comments' photo.id photo.secret_token %}
+            </a>
+        </div>
+        <button class="btn btn-sm btn-outline-dark ms-2" onclick="copyToClipboard('privateLink')">📋</button>
     </div>
 
-    <a class="btn btn-outline-dark mt-3" href="{% url 'upload_photo' %}">Uploader une autre</a>
+    <a class="btn btn-dark mt-3 w-100" href="{% url 'upload_photo' %}">⬆️ Uploader une autre</a>
 </div>
+
+<!-- Toast Bootstrap -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="copyToast" class="toast bg-success text-white" role="alert" data-bs-delay="1500">
+        <div class="toast-body">
+            ✅ Lien copié !
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard(linkId) {
+        const link = document.getElementById(linkId).href;
+        navigator.clipboard.writeText(link).then(() => {
+            let toastEl = new bootstrap.Toast(document.getElementById('copyToast'));
+            toastEl.show();
+        });
+    }
+</script>
 {% endblock %}

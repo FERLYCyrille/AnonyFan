@@ -26,12 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-*22#-psxupgr@#m4x_osp_$_&e16otc$6xgc3%0i3e8d*fr*+x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
 
-ALLOWED_HOSTS = ["anonyfan.onrender.com"]
-CSRF_TRUSTED_ORIGINS = ["https://anonyfan.onrender.com"]
+ALLOWED_HOSTS = ["*"]
+#CSRF_TRUSTED_ORIGINS = ["https://anonyfan.onrender.com"]
 
 
 
