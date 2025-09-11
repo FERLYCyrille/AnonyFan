@@ -77,3 +77,7 @@ Voir tous les commentaires : {comment_url}
         form = CommentForm()
 
     return render(request, 'photo.html', {'photo': photo, 'form': form})
+
+
+def robots_txt(request):
+    return render(request, 'robots.txt', {'domain': request.get_host()}, content_type='text/plain')

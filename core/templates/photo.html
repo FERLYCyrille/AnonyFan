@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}Commenter la photo{% endblock %}
+{% block title %}Photo #{{ photo.id|truncatechars:8 }} - Commentez anonymement{% endblock %}
+
+{% block meta_description %}Voir la photo et laisser un commentaire de manière 100% anonyme. Personne ne saura qui vous êtes.{% endblock %}
 
 {% block content %}
 {% if request.GET.sent %}
@@ -21,8 +23,7 @@
 
     <h4 class="mb-3">💬 Laisse un commentaire anonyme</h4>
 
-    <img src="{{ photo.image.url }}" class="img-fluid rounded shadow-sm my-3"
-        style="max-height: 280px; object-fit: cover; border: 3px solid white;">
+    <img src="{{ photo.image.url }}" class="img-fluid rounded shadow-sm my-3" alt="Photo partagée anonymement" style="max-height: 280px; object-fit: cover; border: 3px solid white;">
 
     <form method="post" class="mt-3">
         {% csrf_token %}
@@ -40,4 +41,35 @@
         🎲 Jouer vous aussi
     </a>
 </div>
+
+<!-- Bouton WhatsApp flottant -->
+<a href="https://wa.me/22965667924?text=Bonjour%2C%20je%20veux%20en%20savoir%20plus%20sur%20vos%20services!"
+    target="_blank" id="whatsapp-button">
+    💬 Contactez-nous !
+</a>
+
+<style>
+    #whatsapp-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #25D366;
+        /* Vert WhatsApp */
+        color: white;
+        font-weight: bold;
+        padding: 15px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        font-size: 16px;
+        z-index: 9999;
+        transition: transform 0.2s ease;
+    }
+
+    #whatsapp-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    }
+</style>
+
 {% endblock %}
