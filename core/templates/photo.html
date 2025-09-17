@@ -2,8 +2,6 @@
 
 {% block title %}Photo #{{ photo.id|truncatechars:8 }} - Commentez anonymement{% endblock %}
 
-{% block meta_description %}Voir la photo et laisser un commentaire de manière 100% anonyme. Personne ne saura qui vous êtes.{% endblock %}
-
 {% block content %}
 {% if request.GET.sent %}
 <div class="toast-container position-fixed top-0 end-0 p-3">
@@ -23,53 +21,176 @@
 
     <h4 class="mb-3">💬 Laisse un commentaire anonyme</h4>
 
-    <img src="{{ photo.image.url }}" class="img-fluid rounded shadow-sm my-3" alt="Photo partagée anonymement" style="max-height: 280px; object-fit: cover; border: 3px solid white;">
+    {% if photo.image %}
+    <img src="{{ photo.image.url }}" class="img-fluid rounded shadow-sm my-3" alt="Photo partagée anonymement"
+        style="max-height: 280px; object-fit: cover; border: 3px solid white;">
+    {% elif photo.video %}
+    <video class="img-fluid rounded shadow-sm my-3" controls
+        style="max-height: 280px; object-fit: cover; border: 3px solid white;">
+        <source src="{{ photo.video.url }}" type="video/mp4">
+        Votre navigateur ne supporte pas la lecture de vidéo.
+    </video>
+    {% endif %}
 
-    <form method="post" class="mt-3">
-        {% csrf_token %}
-
-        <!-- Custom champ de commentaire -->
-        <div class="mb-3">
-            <textarea name="content" rows="3" class="form-control shadow-sm" placeholder="Ton commentaire anonyme..."
-                required></textarea>
+    <div class="mb-3">
+        <label class="form-label">Choisis ton type de commentaire :</label>
+        <div class="btn-group w-100 mb-3" role="group">
+            <button type="button" id="textBtn" class="btn btn-outline-light w-50">📝 Texte</button>
+            <button type="button" id="audioBtn" class="btn btn-outline-light w-50">🎙️ Audio</button>
         </div>
 
-        <button class="btn btn-dark w-100 shadow-sm">✉️ Envoyer</button>
-    </form>
+        <form method="post" class="mt-3">
+            {% csrf_token %}
+
+            <!-- Champ texte -->
+            <div id="textComment" style="display:none;">
+                <textarea name="content" rows="3" class="form-control shadow-sm"
+                    placeholder="Ton commentaire anonyme..."></textarea>
+            </div>
+
+            <!-- Champ audio -->
+            <div id="audioComment" style="display:none; text-align:center;">
+                <button type="button" id="recordBtn" class="btn btn-outline-light w-100"
+                    style="font-size:1.2rem; padding: 15px;">🎙️ Appuyez pour parler</button>
+                <p id="recordStatus" style="margin-top:10px; font-weight:bold; display:none;">Enregistrement : <span
+                        id="recordTime">0</span>s</p>
+                <audio id="audioPreview" controls style="display:none; margin-top:10px;"></audio>
+                <input type="hidden" name="audio" id="audioInput">
+            </div>
+
+            <button class="btn btn-dark w-100 shadow-sm mt-3">✉️ Envoyer</button>
+        </form>
+    </div>
 
     <a href="{% url 'upload_photo' %}" class="btn btn-outline-light mt-4 w-100">
         🎲 Jouer vous aussi
     </a>
+    <!-- Bouton WhatsApp flottant -->
 </div>
-
-<!-- Bouton WhatsApp flottant -->
+<!-- Bouton WhatsApp -->
 <a href="https://wa.me/22965667924?text=Bonjour%2C%20je%20veux%20en%20savoir%20plus%20sur%20vos%20services!"
     target="_blank" id="whatsapp-button">
-    💬 Contactez-nous !
+    💬
 </a>
 
 <style>
     #whatsapp-button {
         position: fixed;
+        /* Toujours visible à l'écran */
         bottom: 20px;
+        /* 20px depuis le bas */
         right: 20px;
+        /* 20px depuis la droite */
         background-color: #25D366;
         /* Vert WhatsApp */
         color: white;
-        font-weight: bold;
-        padding: 15px 20px;
-        border-radius: 50px;
+        border-radius: 50%;
+        /* Rond */
+        width: 60px;
+        height: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         text-decoration: none;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        font-size: 16px;
-        z-index: 9999;
-        transition: transform 0.2s ease;
+        font-size: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s;
+        z-index: 1000;
+        /* Toujours au-dessus */
     }
 
     #whatsapp-button:hover {
         transform: scale(1.1);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        /* Petit effet au survol */
     }
 </style>
+
+
+<script>
+    const textBtn = document.getElementById('textBtn');
+    const audioBtn = document.getElementById('audioBtn');
+    const textComment = document.getElementById('textComment');
+    const audioComment = document.getElementById('audioComment');
+
+    // --- Bascule texte/audio ---
+    textBtn.onclick = () => {
+        textComment.style.display = 'block';
+        audioComment.style.display = 'none';
+        textBtn.classList.add('btn-light');
+        textBtn.classList.remove('btn-outline-light');
+        audioBtn.classList.add('btn-outline-light');
+        audioBtn.classList.remove('btn-light');
+    }
+
+    audioBtn.onclick = () => {
+        textComment.style.display = 'none';
+        audioComment.style.display = 'block';
+        audioBtn.classList.add('btn-light');
+        audioBtn.classList.remove('btn-outline-light');
+        textBtn.classList.add('btn-outline-light');
+        textBtn.classList.remove('btn-light');
+    }
+
+    // --- Enregistrement audio moderne façon WhatsApp ---
+    const recordBtn = document.getElementById('recordBtn');
+    const recordStatus = document.getElementById('recordStatus');
+    const recordTime = document.getElementById('recordTime');
+    const audioPreview = document.getElementById('audioPreview');
+    const audioInput = document.getElementById('audioInput');
+
+    let mediaRecorder;
+    let audioChunks = [];
+    let timer;
+    let seconds = 0;
+
+    // Fonction pour démarrer l'enregistrement
+    async function startRecording() {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioPreview.src = audioUrl;
+            audioPreview.style.display = 'block';
+
+            const reader = new FileReader();
+            reader.onload = () => audioInput.value = reader.result;
+            reader.readAsDataURL(audioBlob);
+        };
+
+        mediaRecorder.start();
+        recordStatus.style.display = 'block';
+        seconds = 0;
+        recordTime.textContent = seconds;
+
+        timer = setInterval(() => {
+            seconds++;
+            recordTime.textContent = seconds;
+        }, 1000);
+
+        recordBtn.textContent = '🔴 Enregistrement... Relâchez pour arrêter';
+    }
+
+    // Fonction pour arrêter l'enregistrement
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            clearInterval(timer);
+            recordStatus.style.display = 'none';
+            recordBtn.textContent = '🎙️ Appuyez pour parler';
+        }
+    }
+
+    // Événements pour PC
+    recordBtn.addEventListener('mousedown', startRecording);
+    recordBtn.addEventListener('mouseup', stopRecording);
+
+    // Événements pour mobile
+    recordBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
+    recordBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRecording(); });
+</script>
 
 {% endblock %}
