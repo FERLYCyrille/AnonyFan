@@ -40,10 +40,13 @@ def photo_page(request, photo_id):
             # 📌 Gestion de l'audio Base64
             audio_base64 = request.POST.get('audio', None)
             if audio_base64:
-                format, audio_str = audio_base64.split(';base64,')
-                ext = format.split('/')[-1]
-                audio_file = ContentFile(base64.b64decode(audio_str), name=f'{uuid.uuid4()}.{ext}')
-                comment.audio = audio_file
+                try:
+                    format, audio_str = audio_base64.split(';base64,')
+                    ext = format.split('/')[-1]
+                    audio_file = ContentFile(base64.b64decode(audio_str), name=f'{uuid.uuid4()}.{ext}')
+                    comment.audio = audio_file
+                except Exception as e:
+                    print("Erreur décodage audio :", e)
 
             comment.save()
 
@@ -55,6 +58,7 @@ def photo_page(request, photo_id):
             # 🔥 Rendu du contenu HTML pour l’email
             html_content = render_to_string("email_template.html", {
                 'comment_content': comment.content,
+                'comment_audio': comment.audio.url if comment.audio else None,  # ajout audio
                 'comment_url': comment_url
             })
 
@@ -63,6 +67,7 @@ def photo_page(request, photo_id):
 Tu as reçu un nouveau commentaire :
 
 "{comment.content}"
+{"Un audio est aussi disponible." if comment.audio else ""}
 
 Voir tous les commentaires : {comment_url}
 """.strip()

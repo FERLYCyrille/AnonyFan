@@ -11,7 +11,7 @@
         style="max-width:600px; margin:auto; background:white; padding:20px; border-radius:5px; box-shadow:0 0 10px rgba(0,0,0,0.05);">
         <h2 style="color:#333;">📩 Nouveau commentaire anonyme reçu</h2>
 
-        <p>Tu as reçu un nouveau commentaire sur ta photo :</p>
+        <p>Tu as reçu un nouveau commentaire :</p>
 
         <blockquote style="color:#555; border-left:4px solid #007BFF; padding-left:15px; margin:15px 0;">
             {{ comment_content }}
@@ -23,6 +23,13 @@
                 ➡️ Voir les commentaires
             </a>
         </p>
+        {% if comment_audio %}
+        <p>🎤 Nouveau message audio :</p>
+        <audio controls>
+            <source src="{{ comment_audio }}" type="audio/mpeg">
+            Ton navigateur ne supporte pas la lecture audio.
+        </audio>
+        {% endif %}
 
         <p style="color:#aaa; font-size:12px; text-align:center;">Ce message a été envoyé automatiquement par
             AnonyPhoto.</p>

@@ -16,6 +16,6 @@ class Photo(models.Model):
 
 class AnonymousComment(models.Model):
     photo = models.ForeignKey(Photo, related_name='comments', on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     audio = models.FileField(upload_to='comments_audio/', blank=True, null=True)
